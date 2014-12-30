@@ -94,7 +94,7 @@ try:
     respuesta += "SIP/2.0 200 OK\r\n\r\n"
 
     if data == respuesta:
-        ACK = "ACK" + " sip:" + LOGIN + "@" + SERVER + " SIP/2.0\r\n\r\n"
+        ACK = "ACK" + " sip:" + lista[0][1]['username'] + ":" + lista[1][1]['ip'] + " SIP/2.0\r\n\r\n"
         print "Enviando ACK: " + ACK
         my_socket.send(ACK)
         data = my_socket.recv(1024)
