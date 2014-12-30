@@ -6,6 +6,7 @@ Programa cliente que abre un socket a un servidor
 
 import socket
 import sys
+import os
 from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
 
@@ -57,7 +58,7 @@ if METODO == 'REGISTER':
     #REGISTER sip:leonard@bigbang.org:1234 SIP/2.0
     #Expires: 3600
     LINE = METODO + " sip:" + lista[0][1]['username'] + ":" + lista[1][1]['puerto'] + " SIP/2.0\r\n"
-    LINE += "Expires: " + OPTION
+    LINE += "Expires: " + OPTION + "\r\n"
 elif METODO == 'INVITE':
     # INVITE sip:penny@girlnextdoor.com SIP/2.0
     #Content-Type: application/sdp
@@ -66,20 +67,19 @@ elif METODO == 'INVITE':
     #s=misesion
     #t=0
     #m=audio 34543 RTP
-    CLIENT = str(client_address[0])
-    LINE = METODO + " sip:" + OPTION  + " SIP/2.0\r\n\r\n"
-    LINE += "Content-Type: application/sdp\r\n\r\n"
-    LINE += "v=0\r\n\r\n"
-    LINE += "o=" + lista[0][1]['username'] + CLIENT + "\r\n\r\n"
-    LINE += "s=misesion\r\n\r\n"
-    LINE += "t=0\r\n\r\n"
-    LINE += "m=audio" + lista[2][1]['puerto'] + "RTP\r\n\r\n"
+    LINE = METODO + " sip:" + OPTION  + " SIP/2.0\r\n"
+    LINE += "Content-Type: application/sdp\r\n"
+    LINE += "v=0\r\n"
+    LINE += "o=" + lista[0][1]['username'] + " " + lista[1][1]['ip'] + "\r\n"
+    LINE += "s=misesion\r\n"
+    LINE += "t=0\r\n"
+    LINE += "m=audio " + lista[2][1]['puerto'] + " RTP\r\n\r\n"
 elif METODO == 'BYE':
-    LINE = METODO + " sip:" + lista[0][1]['username'] + lista[1][1]['puerto'] + "SIP/2.0\r\n\r\n"
+    LINE = METODO + " sip:" + OPTION + " SIP/2.0\r\n\r\n"
 
 my_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-my_socket.connect((lista[1][1]['ip'], int(lista[1][1]['puerto'])))
+my_socket.connect((lista[3][1]['ip'], int(lista[3][1]['puerto'])))
 
 try:
     print "Enviando: " + LINE
