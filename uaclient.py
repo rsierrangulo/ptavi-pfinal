@@ -52,12 +52,18 @@ XMLHandler = ExtraerXML()
 parser.setContentHandler(XMLHandler)
 parser.parse(open(XML))
 lista = XMLHandler.get_tags()
+usuario = lista[0][1]['username']
+uaport = lista[1][1]['puerto']
+uaip = lista[1][1]['ip']
+audioport = lista[2][1]['puerto']
+proxyip = lista[3][1]['ip']
+proxyport = int(lista[3][1]['puerto'])
 
 if METODO == 'REGISTER':
     # [1] porque es el diccionario y no la etiqueta
     #REGISTER sip:leonard@bigbang.org:1234 SIP/2.0
     #Expires: 3600
-    LINE = METODO + " sip:" + lista[0][1]['username'] + ":" + lista[1][1]['puerto'] + " SIP/2.0\r\n"
+    LINE = METODO + " sip:" + usuario + ":" + uaport + " SIP/2.0\r\n"
     LINE += "Expires: " + OPTION + "\r\n"
 elif METODO == 'INVITE':
     # INVITE sip:penny@girlnextdoor.com SIP/2.0
@@ -70,16 +76,16 @@ elif METODO == 'INVITE':
     LINE = METODO + " sip:" + OPTION  + " SIP/2.0\r\n"
     LINE += "Content-Type: application/sdp\r\n"
     LINE += "v=0\r\n"
-    LINE += "o=" + lista[0][1]['username'] + " " + lista[1][1]['ip'] + "\r\n"
+    LINE += "o=" + usuario + " " + uaip + "\r\n"
     LINE += "s=misesion\r\n"
     LINE += "t=0\r\n"
-    LINE += "m=audio " + lista[2][1]['puerto'] + " RTP\r\n\r\n"
+    LINE += "m=audio " + audioport + " RTP\r\n\r\n"
 elif METODO == 'BYE':
     LINE = METODO + " sip:" + OPTION + " SIP/2.0\r\n\r\n"
 
 my_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-my_socket.connect((lista[3][1]['ip'], int(lista[3][1]['puerto'])))
+my_socket.connect((proxyip, proxyport))
 
 try:
     print "Enviando: " + LINE
@@ -94,16 +100,12 @@ try:
     respuesta += "SIP/2.0 200 OK\r\n\r\n"
 
     if data == respuesta:
-        ACK = "ACK" + " sip:" + lista[0][1]['username'] + ":" + lista[1][1]['ip'] + " SIP/2.0\r\n\r\n"
+        #Envio ACK
+        ACK = "ACK" + " sip:" + usuario + ":" + uaip + " SIP/2.0\r\n\r\n"
         print "Enviando ACK: " + ACK
         my_socket.send(ACK)
         data = my_socket.recv(1024)
 
     print "Terminando socket..."
 except socket.error:
-    print "Error: No server listening at " + lista[1][1]['ip'] + " port " + str(lista[1][1]['puerto'])
-
-
-
-
-
+    print "Error: No server listening at " + uaip + " port " + str(uaport)
