@@ -65,6 +65,7 @@ if METODO == 'REGISTER':
     #Expires: 3600
     LINE = METODO + " sip:" + usuario + ":" + uaport + " SIP/2.0\r\n"
     LINE += "Expires: " + OPTION + "\r\n"
+    print LINE.split(" ")
 elif METODO == 'INVITE':
     # INVITE sip:penny@girlnextdoor.com SIP/2.0
     #Content-Type: application/sdp
