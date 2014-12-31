@@ -66,27 +66,26 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
     diccionario_user = {}
     lista_user = []
 
-
-def handle(self):
+    def handle(self):
         """
         Método handle
         """
-        CLIENT = str(self.client_address[0])
         while 1:
             line = self.rfile.read()
-            if not line:
-                break
+            
             print "El cliente nos manda " + line
             lista = line.split(" ")
-            lista_split = lista[1].split(" ")
+            lista_split = lista[1].split(":")
             print lista_split
+            if not line:
+                break
             metodo = lista[0]
             metodos = ['REGISTER', 'INVITE', 'ACK', 'BYE']
             if metodo == "REGISTER":
                 tiempo = time.time() + float(lista[3])
                 tiempo_actual = time.time()
-                self.lista_user = [self.client_address[0], tiempo]
-                self.diccionario_user[lista[1]] = self.lista_user
+                self.lista_user = [self.client_address[0], tiempo, lista_split[2]]
+                self.diccionario_user[lista_split[1]] = self.lista_user
                 for usuario in self.diccionario_user.keys():
                     if self.diccionario_user[usuario][1] < tiempo_actual:
                         del self.diccionario_user[usuario]
@@ -120,14 +119,8 @@ def handle(self):
             fichero.write(time.strftime('%Y-%m-%d %H:%M:%S', hora) + '\r\n')
         fichero.close()
 
-my_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-my_socket.connect((proxyip, proxyport))
-           
 
-serv = SocketServer.UDPServer(("", int(portserver)), SIPRegisterHandler)
-sys.exit("Server " + usuario + " listening at port " + portserver + "...")
-serv.serve_forever()
-
-
-
+if __name__ == "__main__":
+    serv = SocketServer.UDPServer(("", int(portserver)), SIPRegisterHandler)
+    print "Server " + usuario + " listening at port " + portserver + "..."
+    serv.serve_forever()
