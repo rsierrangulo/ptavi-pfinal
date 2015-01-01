@@ -72,41 +72,47 @@ class EchoHandler(SocketServer.DatagramRequestHandler):
                 break
             print "El cliente nos manda " + line
             lista = line.split(" ")
-            metodo = lista[0]
-            nombre = lista[1]
-            nombre_split= nombre.split(":") 
-            nombre_usuario = nombre_split[1]
+
             metodos = ['INVITE', 'ACK', 'BYE']
 
             if metodo == "INVITE":
                 respuesta = "SIP/2.0 100 Trying\r\n\r\n"
                 respuesta += "SIP/2.0 180 Ringing\r\n\r\n"
                 respuesta += "SIP/2.0 200 OK\r\n\r\n"
-                respuesta += metodo + " sip:" + nombre_usuario  + " SIP/2.0\r\n"
                 respuesta += "Content-Type: application/sdp\r\n"
                 respuesta += "v=0\r\n"
                 respuesta += "o=" + usuario + " " + uaip + "\r\n"
                 respuesta += "s=misesion\r\n"
                 respuesta += "t=0\r\n"
                 respuesta += "m=audio8 " + audioport + " RTP\r\n\r\n"
-                self.wfile.write(respuesta)
             elif metodo == "ACK":
+                lista_split = lista[4].split("\r\n")
+                ip_recibe = lista_split[0]
+                port_recibe = lista_split[6]
                 # aEjecutar = "./mp32rtp -i " + receptor_IP + " -p " + receptor_Puerto
-                aEjecutar = './mp32rtp -i' + proxyip + '-p' + proxyport + "<" + fichaudio
+                aEjecutar = './mp32rtp -i' + ip_recibe + '-p' + port_recibe + "<" + fichaudio
                 os.system('chmod 755 mp32rtp')
                 os.system(aEjecutar)
                 print(" Hemos terminado la ejecución de fichero de audio")
             elif metodo == "BYE":
                 self.wfile.write("SIP/2.0 200 OK\r\n\r\n")
+                my_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                my_socket.connect((proxyip, proxyport))
             elif not metodo in metodos:
                 self.wfile.write("SIP/2.0 405 Method Not Allowed\r\n\r\n")
             else:
                 self.wfile.write("SIP/2.0 400 Bad Request\r\n\r\n")
 
+        my_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        my_socket.connect((proxyip, proxyport))
+        my_socket.send(line)
+
 if __name__ == "__main__":
     """
     Procedimiento principal
     """
-    serv = SocketServer.UDPServer((proxyip, proxyport ), EchoHandler)
+    serv = SocketServer.UDPServer((uaip, int(uaport)), EchoHandler)
     print "Listening..."
     serv.serve_forever()
