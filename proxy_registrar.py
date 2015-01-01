@@ -122,7 +122,7 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
                 nombre_split= nombre.split(":") 
                 nombre_usuario = nombre_split[1]
                 # miro si esta registrado y si lo está, reenvio el line (invite)
-                if nombre_usuario not in diccionario_user:
+                if nombre_usuario not in self.diccionario_user:
                     print "El usuario no está registrado"
                     self.wfile.write("SIP/2.0 404 User Not Found\r\n")
                 else:
@@ -130,7 +130,8 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
                     uaport = self.diccionario_user[nombre_usuario][2]
                     my_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                     my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                    my_socket.connect((uaip, uaport))        
+                    my_socket.connect((uaip, uaport))  
+                    my_socket.send(line)      
             elif not metodo in metodos:
                 self.wfile.write("SIP/2.0 405 Method Not Allowed\r\n\r\n")
             else:
