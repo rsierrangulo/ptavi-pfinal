@@ -3,6 +3,7 @@
 
 
 import SocketServer
+import socket
 import sys
 import os
 import time
@@ -66,6 +67,26 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
     diccionario_user = {}
     lista_user = []
 
+    def register2file(self):
+        """
+        Método que imprime en el fichero el contenido del diccionario
+        """
+        database = lista[1][1]['path']
+        fichero = open(database, 'w')
+        fichero.write("User" + '\t\t\t' + "IP" + '\t\t\t' + "Port" + '\t\t\t' + "Time" + '\t\t\t' + "Expires" + '\r\n')
+        for user in self.diccionario_user.keys():
+            # El user se imprime como "sip:usuario" debido a que se guarda así
+            # en la lista
+            IP = self.diccionario_user[user][0]
+            port = self.diccionario_user[user][1]
+            hora = self.diccionario_user[user][2]
+            expires = self.diccionario_user[user][3]
+            fichero.write(user + '\t' + IP + '\t' + port + '\t' + hora + '\t' + expires + '\t')
+            hora = time.gmtime(self.diccionario_user[usuario][2])
+            fichero.write(time.strftime('%Y-%m-%d %H:%M:%S', hora) + '\r\n')
+        fichero.close()
+
+
     def handle(self):
         """
         Método handle
@@ -103,39 +124,17 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
                     self.wfile.write("SIP/2.0 404 User Not Found\r\n")
                 elif nombre in diccionario_user:
                     self.wfile.write(line)
-                    
-                
-                self.diccionario_user[]
-                respuesta = "SIP/2.0 100 Trying\r\n\r\n"
-                respuesta += "SIP/2.0 180 Ringing\r\n\r\n"
-                respuesta += "SIP/2.0 200 OK\r\n\r\n"
-                self.wfile.write(respuesta)
+                    respuesta = "SIP/2.0 100 Trying\r\n\r\n"
+                    respuesta += "SIP/2.0 180 Ringing\r\n\r\n"
+                    respuesta += "SIP/2.0 200 OK\r\n\r\n"
+                    self.wfile.write(respuesta)
             elif not metodo in metodos:
                 self.wfile.write("SIP/2.0 405 Method Not Allowed\r\n\r\n")
             else:
                 self.wfile.write("SIP/2.0 400 Bad Request\r\n\r\n")
 
-    def register2file(self):
-        """
-        Método que imprime en el fichero el contenido del diccionario
-        """
-        DATABASE = lista[1][1]['path']
-        fichero = open(DATABASE, 'w')
-        fichero.write("User" + '\t\t\t' + "IP" + '\t\t\t' + "Port" + '\t\t\t' + "Time" + '\t\t\t' + "Expires" + '\r\n')
-        for user in self.diccionario_user.keys():
-            # El user se imprime como "sip:usuario" debido a que se guarda así
-            # en la lista
-            IP = self.diccionario_user[user][0]
-            port = self.diccionario_user[user][1]
-            hora = self.diccionario_user[user][2]
-            expires = self.diccionario_user[user][3]
-            fichero.write(user + '\t' + IP + '\t' + port + '\t' + hora + '\t' + expires + '\t')
-            hora = time.gmtime(self.diccionario_user[usuario][2])
-            fichero.write(time.strftime('%Y-%m-%d %H:%M:%S', hora) + '\r\n')
-        fichero.close()
-
 
 if __name__ == "__main__":
-    serv = SocketServer.UDPServer(("", int(portserver)), SIPRegisterHandler)
+    serv = SocketServer.UDPServer((ipserver, int(portserver)), SIPRegisterHandler)
     print "Server " + usuario + " listening at port " + portserver + "..."
     serv.serve_forever()
