@@ -12,13 +12,12 @@ from xml.sax.handler import ContentHandler
 
 comandos = sys.argv
 
-if len(comandos) != 4:
-    sys.exit('Usage: python uaclient.py config method option')
-
-
 XML = comandos[1]
 METODO = comandos[2].upper()
 OPTION = comandos [3]
+
+if len(comandos) != 4:
+    sys.exit('Usage: python uaclient.py' + XML + METODO + OPTION)
 
 # clase para etiquetas y atributos
 class ExtraerXML (ContentHandler):
@@ -80,7 +79,9 @@ elif METODO == 'INVITE':
     LINE += "o=" + usuario + " " + uaip + "\r\n"
     LINE += "s=misesion\r\n"
     LINE += "t=0\r\n"
-    LINE += "m=audio " + audioport + " RTP\r\n\r\n"
+    LINE += "m=audio8 " + audioport + " RTP\r\n\r\n"
+    lista = LINE.split(" ")
+    print lista
 elif METODO == 'BYE':
     LINE = METODO + " sip:" + OPTION + " SIP/2.0\r\n\r\n"
 
