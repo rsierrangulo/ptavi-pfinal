@@ -76,6 +76,7 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
             print "El cliente nos manda " + line
             lista = line.split(" ")
             lista_split = lista[1].split(":")
+            IP = self.client_address[0]
             print lista_split
             if not line:
                 break
@@ -84,13 +85,27 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
             if metodo == "REGISTER":
                 tiempo = time.time() + float(lista[3])
                 tiempo_actual = time.time()
-                self.lista_user = [self.client_address[0], tiempo, lista_split[2]]
+                # creo una lista ordenada que contiene ip, tiempo y puerto.
+                self.lista_user = [IP, tiempo, lista_split[2]]
+                # guardo la ip, el tiempo de expiracion y el puerto en esa clave del diccionario.
                 self.diccionario_user[lista_split[1]] = self.lista_user
                 for usuario in self.diccionario_user.keys():
+                    # si el tiempo actual es menor que el tiempo guardado en el diccionario ([1] porque es valor y no la clave)
                     if self.diccionario_user[usuario][1] < tiempo_actual:
+                        # borro el usuario (clave + valor) del diccionario
                         del self.diccionario_user[usuario]
                 self.wfile.write("SIP/2.0 200 OK\r\n\r\n")
             elif metodo == "INVITE":
+                nombre = lista[1]
+                # miro si esta registrado y si lo está, reenvio el line (invite)
+                if nombre not in diccionario_user:
+                    print "El usuario no está registrado"
+                    self.wfile.write("SIP/2.0 404 User Not Found\r\n")
+                elif nombre in diccionario_user:
+                    self.wfile.write(line)
+                    
+                
+                self.diccionario_user[]
                 respuesta = "SIP/2.0 100 Trying\r\n\r\n"
                 respuesta += "SIP/2.0 180 Ringing\r\n\r\n"
                 respuesta += "SIP/2.0 200 OK\r\n\r\n"
