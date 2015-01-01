@@ -93,14 +93,14 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
         """
         while 1:
             line = self.rfile.read()
-            
+            if not line:
+                break
             print "El cliente nos manda " + line
             lista = line.split(" ")
             lista_split = lista[1].split(":")
             IP = self.client_address[0]
             print lista_split
-            if not line:
-                break
+            
             metodo = lista[0]
             metodos = ['REGISTER', 'INVITE', 'ACK', 'BYE']
             if metodo == "REGISTER":
@@ -115,24 +115,26 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
                     if self.diccionario_user[usuario][1] < tiempo_actual:
                         # borro el usuario (clave + valor) del diccionario
                         del self.diccionario_user[usuario]
+                print self.diccionario_user
                 self.wfile.write("SIP/2.0 200 OK\r\n\r\n")
             elif metodo == "INVITE":
                 nombre = lista[1]
+                nombre_split= nombre.split(":") 
+                nombre_usuario = nombre_split[1]
                 # miro si esta registrado y si lo está, reenvio el line (invite)
-                if nombre not in diccionario_user:
+                if nombre_usuario not in diccionario_user:
                     print "El usuario no está registrado"
                     self.wfile.write("SIP/2.0 404 User Not Found\r\n")
-                elif nombre in diccionario_user:
-                    self.wfile.write(line)
-                    respuesta = "SIP/2.0 100 Trying\r\n\r\n"
-                    respuesta += "SIP/2.0 180 Ringing\r\n\r\n"
-                    respuesta += "SIP/2.0 200 OK\r\n\r\n"
-                    self.wfile.write(respuesta)
+                else:
+                    uaip = self.diccionario_user[nombre_usuario][0]
+                    uaport = self.diccionario_user[nombre_usuario][2]
+                    my_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                    my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                    my_socket.connect((uaip, uaport))        
             elif not metodo in metodos:
                 self.wfile.write("SIP/2.0 405 Method Not Allowed\r\n\r\n")
             else:
                 self.wfile.write("SIP/2.0 400 Bad Request\r\n\r\n")
-
 
 if __name__ == "__main__":
     serv = SocketServer.UDPServer((ipserver, int(portserver)), SIPRegisterHandler)
