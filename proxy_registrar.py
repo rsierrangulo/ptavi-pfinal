@@ -95,7 +95,7 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
             line = self.rfile.read()
             if not line:
                 break
-            print "El cliente nos manda " + line
+            print "RECIBIDO " + line
             lista = line.split(" ")
             lista_split = lista[1].split(":")
             IP = self.client_address[0]
@@ -111,7 +111,7 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
                 # guardo la ip, el tiempo de expiracion y el puerto en esa clave del diccionario.
                 self.diccionario_user[lista_split[1]] = self.lista_user
                 for usuario in self.diccionario_user.keys():
-                    # si el tiempo actual es menor que el tiempo guardado en el diccionario ([1] porque es valor y no la clave)
+                    # si el tiempo actual es menor que el tiempo guardado en el diccionario 
                     if self.diccionario_user[usuario][1] < tiempo_actual:
                         # borro el usuario (clave + valor) del diccionario
                         del self.diccionario_user[usuario]
@@ -122,16 +122,21 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
                 nombre_split= nombre.split(":") 
                 nombre_usuario = nombre_split[1]
                 # miro si esta registrado y si lo está, reenvio el line (invite)
-                if nombre_usuario not in self.diccionario_user:
-                    print "El usuario no está registrado"
-                    self.wfile.write("SIP/2.0 404 User Not Found\r\n")
-                else:
+                if self.diccionario_user.has_key(nombre_usuario):
                     uaip = self.diccionario_user[nombre_usuario][0]
+                    print uaip
                     uaport = self.diccionario_user[nombre_usuario][2]
+                    print uaport
                     my_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                     my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                    my_socket.connect((uaip, uaport))  
-                    my_socket.send(line)      
+                    my_socket.connect((uaip, int(uaport)))  
+                    my_socket.send(line)
+                    data = my_socket.recv(1024)
+                    print data
+                    self.wfile.write(data)
+                else:
+                    print "El usuario no está registrado"
+                    self.wfile.write("SIP/2.0 404 User Not Found\r\n")      
             elif not metodo in metodos:
                 self.wfile.write("SIP/2.0 405 Method Not Allowed\r\n\r\n")
             else:
