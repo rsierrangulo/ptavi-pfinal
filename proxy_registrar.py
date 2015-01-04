@@ -71,18 +71,18 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
         """
         Método que imprime en el fichero el contenido del diccionario
         """
-        database = lista[1][1]['path']
-        fichero = open(database, 'w')
-        fichero.write("User" + '\t\t\t' + "IP" + '\t\t\t' + "Port" + '\t\t\t' + "Time" + '\t\t\t' + "Expires" + '\r\n')
+        database = listaXML[1][1]['path']
+        fichero = open('database', 'w')
+        fichero.write("User" + '\t\t\t\t' + "IP" + '\t\t\t' + "Port" + '\t' + "Time" + '\r\n')
+        print self.diccionario_user
         for user in self.diccionario_user.keys():
             # El user se imprime como "sip:usuario" debido a que se guarda así
             # en la lista
             IP = self.diccionario_user[user][0]
-            port = self.diccionario_user[user][1]
-            hora = self.diccionario_user[user][2]
-            expires = self.diccionario_user[user][3]
-            fichero.write(user + '\t' + IP + '\t' + port + '\t' + hora + '\t' + expires + '\t')
-            hora = time.gmtime(self.diccionario_user[usuario][2])
+            port = self.diccionario_user[user][2]
+            hora = self.diccionario_user[user][1]
+            fichero.write(user + '\t' + IP + '\t' + port + '\t')
+            hora = time.gmtime(self.diccionario_user[user][1])
             fichero.write(time.strftime('%Y-%m-%d %H:%M:%S', hora) + '\r\n')
         fichero.close()
 
@@ -141,6 +141,8 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
                 self.wfile.write("SIP/2.0 405 Method Not Allowed\r\n\r\n")
             else:
                 self.wfile.write("SIP/2.0 400 Bad Request\r\n\r\n")
+            self.register2file()
+        
 
 if __name__ == "__main__":
     serv = SocketServer.UDPServer((ipserver, int(portserver)), SIPRegisterHandler)
