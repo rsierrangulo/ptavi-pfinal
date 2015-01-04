@@ -61,11 +61,12 @@ class EchoHandler(SocketServer.DatagramRequestHandler):
     """
     Clase para un servidor SIP
     """
-
+    guardar = ""
     def handle(self):
         """
         Método handle
         """
+
         while 1:
             line = self.rfile.read()
             if not line:
@@ -87,11 +88,19 @@ class EchoHandler(SocketServer.DatagramRequestHandler):
                 respuesta += "t=0\r\n"
                 respuesta += "m=audio8 " + audioport + " RTP\r\n\r\n"
                 self.wfile.write(respuesta)
+                self.guardar = respuesta
+                lista_2 = self.guardar.split("\r\n")
+                print lista_2
+                lista_split = lista_2[7].split(" ")
+                lista_split_2 = lista_2[10].split(" ")
+                ip_recibe = lista_split[1]
+                port_recibe = lista_split_2[1]
+                print "TRAZAS"
+                print ip_recibe
+                print port_recibe
+                print "TRAZAS"
                 print respuesta
             elif metodo == "ACK":
-                lista_split = lista[4].split("\r\n")
-                ip_recibe = lista_split[0]
-                port_recibe = lista_split[6]
                 # aEjecutar = "./mp32rtp -i " + receptor_IP + " -p " + receptor_Puerto
                 aEjecutar = './mp32rtp -i' + ip_recibe + '-p' + port_recibe + "<" + fichaudio
                 os.system('chmod 755 mp32rtp')
