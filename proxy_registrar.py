@@ -24,7 +24,7 @@ def log (hora, evento):
     Método que imprime en un fichero los mensajes de depuración.
     """
     log = listaXML[2][1]['path']
-    fichero = open('log', 'w')
+    fichero = open('log', 'a')
     fichero.write("Tiempo" + '\t\t\t\t\t\t\t\t' + "Evento" + '\r\n')
     fichero.write(str(hora))
     fichero.write(evento)
@@ -103,6 +103,9 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
         """
         Método handle
         """
+        hora = time.time()
+        evento = " Starting..."
+        log(hora, evento)
         while 1:
             line = self.rfile.read()
             if not line:
@@ -112,7 +115,6 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
             lista_split = lista[1].split(":")
             IP = self.client_address[0]
             print lista_split
-            puerto = lista_split[2]
             
             metodo = lista[0]
             metodos = ['REGISTER', 'INVITE', 'ACK', 'BYE']
@@ -129,10 +131,10 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
                         # borro el usuario (clave + valor) del diccionario
                         del self.diccionario_user[usuario]
                 print self.diccionario_user
-                evento = " Received from " + str(IP) + str(puerto) + " " + line + '\r\n'
+                evento = " Received from " + str(IP) + " " + str(lista_split[2]) + " " + line + '\r\n'
                 hora = time.time()
                 log(hora, evento)
-                evento = " Sent to " + str(IP) + str(puerto) + " SIP/2.0 200 OK"  + '\r\n'
+                evento = " Sent to " + str(IP) + " " + str(lista_split[2]) + " SIP/2.0 200 OK"  + '\r\n'
                 log(hora, evento)
                 self.wfile.write("SIP/2.0 200 OK\r\n\r\n")
             elif metodo == "INVITE":
@@ -153,12 +155,29 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
                     hora = time.time()
                     evento = " Sent to " + str(uaip) + str(uaport) + line + '\r\n'
                     log(hora, evento)
+                    #Busco la ip origen
+                    lista_split_ip = lista[4].split('\r\n')
+                    lista_ip = lista_split_ip[0]
+                    lista_split_sip = lista[1].split(":")
+                    lista_nombre = lista_split_sip[1]
+                    ip_receive = lista_ip
+                    puerto_receive = self.diccionario_user[lista_nombre][2]
+                    print "PUERTO"
+                    print puerto_receive
+                    evento = " Received to " + str(ip_receive) + " " + str(puerto_receive) + " " + line + '\r\n'
                     data = my_socket.recv(1024)
+                    print " necesito sip para puerto"
+                    print lista
                     print data
                     self.wfile.write(data)
+                elif metodo == "BYE"
                 else:
                     print "El usuario no está registrado"
-                    self.wfile.write("SIP/2.0 404 User Not Found\r\n")      
+                    self.wfile.write("SIP/2.0 404 User Not Found\r\n")
+                    hora = time.time()
+                    error = " SIP/2.0 404 User Not Found"
+                    evento = " Sent to " + str(uaip) + " " + str(uaport) + error + '\r\n'
+                    log(hora, evento)      
             elif not metodo in metodos:
                 self.wfile.write("SIP/2.0 405 Method Not Allowed\r\n\r\n")
             else:
