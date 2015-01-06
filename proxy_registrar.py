@@ -19,6 +19,19 @@ if len(comandos) != 2:
     sys.exit("Usage: python proxy_registrar.py " + XML)
 
 
+def log (hora, evento):
+    """
+    Método que imprime en un fichero los mensajes de depuración.
+    """
+    log = listaXML[2][1]['path']
+    fichero = open('log', 'w')
+    fichero.write("Tiempo" + '\t\t\t\t\t\t\t\t' + "Evento" + '\r\n')
+    fichero.write(str(hora))
+    fichero.write(evento)
+    fichero.close()
+    
+
+
 # clase para etiquetas y atributos
 class ExtraerXML (ContentHandler):
 
@@ -69,7 +82,7 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
 
     def register2file(self):
         """
-        Método que imprime en el fichero el contenido del diccionario
+        Método que imprime en un fichero el contenido del diccionario
         """
         database = listaXML[1][1]['path']
         fichero = open('database', 'w')
@@ -82,10 +95,9 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
             port = self.diccionario_user[user][2]
             hora = self.diccionario_user[user][1]
             fichero.write(user + '\t' + IP + '\t' + port + '\t')
-            hora = time.gmtime(self.diccionario_user[user][1])
+            hora = time.gmtime(hora)
             fichero.write(time.strftime('%Y-%m-%d %H:%M:%S', hora) + '\r\n')
         fichero.close()
-
 
     def handle(self):
         """
@@ -100,6 +112,7 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
             lista_split = lista[1].split(":")
             IP = self.client_address[0]
             print lista_split
+            puerto = lista_split[2]
             
             metodo = lista[0]
             metodos = ['REGISTER', 'INVITE', 'ACK', 'BYE']
@@ -116,6 +129,11 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
                         # borro el usuario (clave + valor) del diccionario
                         del self.diccionario_user[usuario]
                 print self.diccionario_user
+                evento = " Received from " + str(IP) + str(puerto) + " " + line + '\r\n'
+                hora = time.time()
+                log(hora, evento)
+                evento = " Sent to " + str(IP) + str(puerto) + " SIP/2.0 200 OK"  + '\r\n'
+                log(hora, evento)
                 self.wfile.write("SIP/2.0 200 OK\r\n\r\n")
             elif metodo == "INVITE":
                 nombre = lista[1]
@@ -123,6 +141,7 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
                 nombre_usuario = nombre_split[1]
                 # miro si esta registrado y si lo está, reenvio el line (invite)
                 if self.diccionario_user.has_key(nombre_usuario):
+                    # con la dirección sip saco la ip y el puerto del diccionario.
                     uaip = self.diccionario_user[nombre_usuario][0]
                     print uaip
                     uaport = self.diccionario_user[nombre_usuario][2]
@@ -131,6 +150,9 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
                     my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                     my_socket.connect((uaip, int(uaport)))  
                     my_socket.send(line)
+                    hora = time.time()
+                    evento = " Sent to " + str(uaip) + str(uaport) + line + '\r\n'
+                    log(hora, evento)
                     data = my_socket.recv(1024)
                     print data
                     self.wfile.write(data)
