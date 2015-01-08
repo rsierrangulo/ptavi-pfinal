@@ -19,18 +19,23 @@ if len(comandos) != 2:
     sys.exit("Usage: python proxy_registrar.py " + XML)
 
 
-def log (hora, evento):
+def log (modo, hora, evento):
     """
     Método que imprime en un fichero los mensajes de depuración.
     """
-    log = listaXML[2][1]['path']
-    fichero = open('log', 'a')
-    fichero.write("Tiempo" + '\t\t\t\t\t\t\t\t' + "Evento" + '\r\n')
-    fichero.write(str(hora))
-    fichero.write(evento)
-    fichero.close()
-    
-
+    if modo == "inicio":
+        log = listaXML[2][1]['path']
+        fichero = open('log', 'a')
+        fichero.write("Tiempo" + '\t\t\t\t\t\t\t\t' + "Evento" + '\r\n')
+        fichero.write(str(hora))
+        fichero.write(evento)
+        fichero.close()
+    else:
+        log = listaXML[2][1]['path']
+        fichero = open('log', 'a')
+        fichero.write(str(hora))
+        fichero.write(evento)
+        fichero.close()
 
 # clase para etiquetas y atributos
 class ExtraerXML (ContentHandler):
@@ -70,7 +75,9 @@ listaXML = XMLHandler.get_tags()
 usuario = listaXML[0][1]['name']
 ipserver = listaXML[0][1]['ip']
 portserver = listaXML[0][1]['puerto']
-
+evento = " Starting... " + '\r\n'
+hora = time.time()
+log("inicio",hora,evento)
 
 class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
     """
@@ -103,9 +110,6 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
         """
         Método handle
         """
-        hora = time.time()
-        evento = " Starting..."
-        log(hora, evento)
         while 1:
             line = self.rfile.read()
             if not line:
@@ -118,6 +122,7 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
             
             metodo = lista[0]
             metodos = ['REGISTER', 'INVITE', 'ACK', 'BYE']
+            print metodo
             if metodo == "REGISTER":
                 tiempo = time.time() + float(lista[3])
                 tiempo_actual = time.time()
@@ -133,9 +138,9 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
                 print self.diccionario_user
                 evento = " Received from " + str(IP) + " " + str(lista_split[2]) + " " + line + '\r\n'
                 hora = time.time()
-                log(hora, evento)
+                log("",hora, evento)
                 evento = " Sent to " + str(IP) + " " + str(lista_split[2]) + " SIP/2.0 200 OK"  + '\r\n'
-                log(hora, evento)
+                log("",hora, evento)
                 self.wfile.write("SIP/2.0 200 OK\r\n\r\n")
             elif metodo == "INVITE":
                 nombre = lista[1]
@@ -143,18 +148,18 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
                 nombre_usuario = nombre_split[1]
                 # miro si esta registrado y si lo está, reenvio el line (invite)
                 if self.diccionario_user.has_key(nombre_usuario):
-                    # con la dirección sip saco la ip y el puerto del diccionario.
                     uaip = self.diccionario_user[nombre_usuario][0]
                     print uaip
                     uaport = self.diccionario_user[nombre_usuario][2]
                     print uaport
+                    # con la dirección sip saco la ip y el puerto del diccionario.
                     my_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                     my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                     my_socket.connect((uaip, int(uaport)))  
                     my_socket.send(line)
                     hora = time.time()
                     evento = " Sent to " + str(uaip) + str(uaport) + line + '\r\n'
-                    log(hora, evento)
+                    log("",hora, evento)
                     #Busco la ip origen
                     lista_split_ip = lista[4].split('\r\n')
                     lista_ip = lista_split_ip[0]
@@ -170,18 +175,45 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
                     print lista
                     print data
                     self.wfile.write(data)
-                elif metodo == "BYE"
                 else:
                     print "El usuario no está registrado"
                     self.wfile.write("SIP/2.0 404 User Not Found\r\n")
                     hora = time.time()
                     error = " SIP/2.0 404 User Not Found"
-                    evento = " Sent to " + str(uaip) + " " + str(uaport) + error + '\r\n'
-                    log(hora, evento)      
-            elif not metodo in metodos:
-                self.wfile.write("SIP/2.0 405 Method Not Allowed\r\n\r\n")
-            else:
-                self.wfile.write("SIP/2.0 400 Bad Request\r\n\r\n")
+                    evento = " Error " + error + '\r\n'
+                    log("",hora, evento)  
+            elif metodo == "BYE":
+                nombre = lista[1]
+                nombre_split= nombre.split(":") 
+                nombre_usuario = nombre_split[1]
+                uaip = self.diccionario_user[nombre_usuario][0]
+                print uaip
+                uaport = self.diccionario_user[nombre_usuario][2]
+                print uaport
+                my_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                my_socket.connect((uaip, int(uaport)))  
+                my_socket.send(line)
+                hora = time.time()
+                evento = " Sent to " + str(uaip) + " " + str(uaport) + " " + line + '\r\n'
+                log("",hora, evento)
+                data = my_socket.recv(1024)
+                self.wfile.write(data)
+            elif metodo == "ACK":
+                nombre = lista[1]
+                nombre_split= nombre.split(":") 
+                nombre_usuario = nombre_split[1]
+                uaip = self.diccionario_user[nombre_usuario][0]
+                print uaip
+                uaport = self.diccionario_user[nombre_usuario][2]
+                print uaport
+                my_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                my_socket.connect((uaip, int(uaport)))  
+                my_socket.send(line)
+                hora = time.time()
+                evento = " Sent to " + str(uaip) + " " + str(uaport) + " " + line + '\r\n'
+                log("",hora, evento)  
             self.register2file()
         
 
