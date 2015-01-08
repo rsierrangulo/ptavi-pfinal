@@ -61,7 +61,9 @@ class EchoHandler(SocketServer.DatagramRequestHandler):
     """
     Clase para un servidor SIP
     """
-    guardar = ""
+    ip_recibe = ""
+    port_recibe = ""
+
     def handle(self):
         """
         Método handle
@@ -76,7 +78,7 @@ class EchoHandler(SocketServer.DatagramRequestHandler):
 
             metodo = lista[0]            
             metodos = ['INVITE', 'ACK', 'BYE']
-
+            print metodo
             if metodo == "INVITE":
                 respuesta = "SIP/2.0 100 Trying\r\n\r\n"
                 respuesta += "SIP/2.0 180 Ringing\r\n\r\n"
@@ -88,21 +90,22 @@ class EchoHandler(SocketServer.DatagramRequestHandler):
                 respuesta += "t=0\r\n"
                 respuesta += "m=audio8 " + audioport + " RTP\r\n\r\n"
                 self.wfile.write(respuesta)
-                self.guardar = respuesta
-                lista_2 = self.guardar.split("\r\n")
+                guardar = respuesta
+                lista_2 = guardar.split("\r\n")
                 print lista_2
                 lista_split = lista_2[7].split(" ")
                 lista_split_2 = lista_2[10].split(" ")
-                ip_recibe = lista_split[1]
-                port_recibe = lista_split_2[1]
+                self.ip_recibe = lista_split[1]
+                self.port_recibe = lista_split_2[1]
                 print "TRAZAS"
-                print ip_recibe
-                print port_recibe
+                print self.ip_recibe
+                print self.port_recibe
                 print "TRAZAS"
                 print respuesta
             elif metodo == "ACK":
                 # aEjecutar = "./mp32rtp -i " + receptor_IP + " -p " + receptor_Puerto
-                aEjecutar = './mp32rtp -i' + ip_recibe + '-p' + port_recibe + "<" + fichaudio
+                print "recibido ACK"
+                aEjecutar = './mp32rtp -i' + self.ip_recibe + '-p' + self.port_recibe + "<" + fichaudio
                 os.system('chmod 755 mp32rtp')
                 os.system(aEjecutar)
                 print(" Hemos terminado la ejecución de fichero de audio")
