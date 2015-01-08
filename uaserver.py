@@ -6,6 +6,7 @@ import SocketServer
 import socket
 import sys
 import os
+import time
 from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
 
@@ -47,15 +48,36 @@ parser = make_parser()
 XMLHandler = ExtraerXML()
 parser.setContentHandler(XMLHandler)
 parser.parse(open(XML))
-lista = XMLHandler.get_tags()
-usuario = lista[0][1]['username']
-uaport = lista[1][1]['puerto']
-uaip = lista[1][1]['ip']
-audioport = lista[2][1]['puerto']
-proxyip = lista[3][1]['ip']
-proxyport = int(lista[3][1]['puerto'])
-fichaudio = lista[5][1]['path']
+listaXML = XMLHandler.get_tags()
+usuario = listaXML[0][1]['username']
+uaport = listaXML[1][1]['puerto']
+uaip = listaXML[1][1]['ip']
+audioport = listaXML[2][1]['puerto']
+proxyip = listaXML[3][1]['ip']
+proxyport = int(listaXML[3][1]['puerto'])
+fichaudio = listaXML[5][1]['path']
 
+def log (modo, hora, evento):
+    """
+    Método que imprime en un fichero los mensajes de depuración.
+    """
+    if modo == "inicio":
+        log = listaXML[4][1]['path']
+        fichero = open(log, 'a')
+        fichero.write("Tiempo" + '\t\t\t\t\t\t\t\t' + "Evento" + '\r\n')
+        fichero.write(str(hora))
+        fichero.write(evento)
+        fichero.close()
+    else:
+        log = listaXML[4][1]['path']
+        fichero = open(log, 'a')
+        fichero.write(str(hora))
+        fichero.write(evento)
+        fichero.close()
+
+evento = " Starting... " + '\r\n'
+hora = time.time()
+log("inicio",hora,evento)
 
 class EchoHandler(SocketServer.DatagramRequestHandler):
     """
@@ -100,9 +122,16 @@ class EchoHandler(SocketServer.DatagramRequestHandler):
                 print "TRAZAS"
                 print self.ip_recibe
                 print self.port_recibe
-                print "TRAZAS"
-                print respuesta
+                print "TRAZAS" 
+                print respuestara
+                hora = time.time()
+                evento = " Sent to " + str(proxyip) + ":" + str(proxyport) + ": " + respuesta + '\r\n'
+                log("",hora, evento)
+                evento = " Received from" + str(proxyip) + ":" + str(proxyport) + ": " + line + '\r\n'
             elif metodo == "ACK":
+                evento = " Received from" + str(proxyip) + ":" + str(proxyport) + ": " + line + '\r\n'
+                hora = time.time()
+                log("",hora, evento)
                 # aEjecutar = "./mp32rtp -i " + receptor_IP + " -p " + receptor_Puerto
                 print "recibido ACK"
                 aEjecutar = './mp32rtp -i' + self.ip_recibe + '-p' + self.port_recibe + "<" + fichaudio
@@ -110,10 +139,23 @@ class EchoHandler(SocketServer.DatagramRequestHandler):
                 os.system(aEjecutar)
                 print(" Hemos terminado la ejecución de fichero de audio")
             elif metodo == "BYE":
+                hora = time.time()
+                respuesta = "SIP/2.0 200 OK"
+                evento = " Sent to " + str(proxyip) + ":" + str(proxyport) + ": " + respuesta + '\r\n'
+                log("",hora, evento)
+                evento = " Received from" + str(proxyip) + ":" + str(proxyport) + ": " + line + '\r\n'
                 self.wfile.write("SIP/2.0 200 OK\r\n\r\n")
             elif not metodo in metodos:
+                hora = time.time()
+                respuesta = "SIP/2.0 405 Method Not Allowed"
+                evento = " Sent to " + str(proxyip) + ":" + str(proxyport) + ": " + respuesta + '\r\n'
+                log("",hora, evento)
                 self.wfile.write("SIP/2.0 405 Method Not Allowed\r\n\r\n")
             else:
+                hora = time.time()
+                respuesta = "SIP/2.0 400 Bad Request"
+                evento = " Sent to " + str(proxyip) + ":" + str(proxyport) + ": " + respuesta + '\r\n'
+                log("",hora, evento)
                 self.wfile.write("SIP/2.0 400 Bad Request\r\n\r\n")
 
 
