@@ -7,6 +7,7 @@ Programa cliente que abre un socket a un servidor
 import socket
 import sys
 import os
+import time
 from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
 
@@ -50,13 +51,35 @@ parser = make_parser()
 XMLHandler = ExtraerXML()
 parser.setContentHandler(XMLHandler)
 parser.parse(open(XML))
-lista = XMLHandler.get_tags()
-usuario = lista[0][1]['username']
-uaport = lista[1][1]['puerto']
-uaip = lista[1][1]['ip']
-audioport = lista[2][1]['puerto']
-proxyip = lista[3][1]['ip']
-proxyport = int(lista[3][1]['puerto'])
+listaXML = XMLHandler.get_tags()
+usuario = listaXML[0][1]['username']
+uaport = listaXML[1][1]['puerto']
+uaip = listaXML[1][1]['ip']
+audioport = listaXML[2][1]['puerto']
+proxyip = listaXML[3][1]['ip']
+proxyport = int(listaXML[3][1]['puerto'])
+
+def log (modo, hora, evento):
+    """
+    Método que imprime en un fichero los mensajes de depuración.
+    """
+    if modo == "inicio":
+        log = listaXML[4][1]['path']
+        fichero = open(log, 'a')
+        fichero.write("Tiempo" + '\t\t\t\t\t\t\t\t' + "Evento" + '\r\n')
+        fichero.write(str(hora))
+        fichero.write(evento)
+        fichero.close()
+    else:
+        log = listaXML[4][1]['path']
+        fichero = open(log, 'a')
+        fichero.write(str(hora))
+        fichero.write(evento)
+        fichero.close()
+
+evento = " Starting... " + '\r\n'
+hora = time.time()
+log("inicio",hora,evento)
 
 if METODO == 'REGISTER':
     # [1] porque es el diccionario y no la etiqueta
@@ -64,6 +87,8 @@ if METODO == 'REGISTER':
     #Expires: 3600
     LINE = METODO + " sip:" + usuario + ":" + uaport + " SIP/2.0\r\n"
     LINE += "Expires: " + OPTION + "\r\n"
+    hora = time.time()
+    evento = " Sent to " + str(proxyip) + " " + str(proxyport) + " " + LINE  + '\r\n'
     print LINE.split(" ")
 elif METODO == 'INVITE':
     # INVITE sip:penny@girlnextdoor.com SIP/2.0
@@ -80,10 +105,22 @@ elif METODO == 'INVITE':
     LINE += "s=misesion\r\n"
     LINE += "t=0\r\n"
     LINE += "m=audio8 " + audioport + " RTP\r\n\r\n"
+    hora = time.time()
+    evento = " Sent to " + str(proxyip) + " " + str(proxyport) + " " + LINE + '\r\n'
+    log("",hora, evento)
     lista = LINE.split(" ")
     print lista
 elif METODO == 'BYE':
     LINE = METODO + " sip:" + OPTION + " SIP/2.0\r\n\r\n"
+    hora = time.time()
+    evento = " Sent to " + str(proxyip) + " " + str(proxyport) + " " + LINE + '\r\n'
+    log("",hora, evento)
+else:
+    hora = time.time()
+    error = "SIP/2.0 405 Method Not Allowed"
+    evento = " Error " + error + '\r\n'
+    log("",hora, evento) 
+    sys.exit("Error: Método no válido")    
 
 my_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -94,16 +131,38 @@ try:
     my_socket.send(LINE)
 
     data = my_socket.recv(1024)
+    if data == "SIP/2.0 200 OK\r\n\r\n":
+        evento = " Received from " + str(proxyip) + ":" + str(proxyport) + " " + data + '\r\n'
+        hora = time.time()
+        log("",hora, evento)
+    elif data == "SIP/2.0 405 Method Not Allowed\r\n\r\n":
+        evento = " Error " + data + '\r\n'
+        hora = time.time()
+        log("",hora, evento)
+    elif data == "SIP/2.0 400 Bad Request\r\n\r\n":
+        evento = " Error " + data + '\r\n'
+        hora = time.time()
+        log("",hora, evento)
 
     print 'Recibido -- ', data
-
-    respuesta = "SIP/2.0 100 Trying\r\n\r\n"
-    respuesta += "SIP/2.0 180 Ringing\r\n\r\n"
-    respuesta += "SIP/2.0 200 OK\r\n\r\n"
-
-    if data == respuesta:
+    recibe = data.split('\r\n')
+    print "TRAZA RECIBE"
+    print recibe
+    if len(recibe) == 13:
+        evento = " Received from " + str(proxyip) + ":" + str(proxyport) + " " + data + '\r\n'
+        hora = time.time()
+        log("",hora, evento)
+        fichaudio = listaXML[5][1]['path']
+        # saco del recibe ip y puerto donde mandar
+        split_recibe = recibe[7].split(" ")
+        ip_recibe = split_recibe[1]
+        split_recibe_1 = recibe[10].split(" ")
+        port_recibe = split_recibe_1[1]
+        aEjecutar = './mp32rtp -i ' + str(ip_recibe) + ' -p ' + port_recibe + " < " + fichaudio
+        os.system('chmod 755 mp32rtp')
+        os.system(aEjecutar)
         #Envio ACK
-        ACK = "ACK" + " sip:" + usuario + ":" + uaip + " SIP/2.0\r\n\r\n"
+        ACK = "ACK" + " sip:" + OPTION + " SIP/2.0\r\n\r\n"
         print "Enviando ACK: " + ACK
         my_socket.send(ACK)
         data = my_socket.recv(1024)
