@@ -168,25 +168,27 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
                         socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                     my_socket.connect((uaip, int(uaport)))
                     my_socket.send(line)
+                    #Busco la ip origen
+                    ip_receive = self.client_address[0]
+                    port_receive = self.client_address[1]
+                    hora = time.time()
+                    evento = " Received from " + str(ip_receive) + ":"
+                    evento += str(port_receive) + ": " + line + '\r\n'
+                    log("", hora, evento)
                     hora = time.time()
                     evento = " Sent to " + str(uaip) + " " + str(uaport) + " "
                     evento += line + '\r\n'
-                    log("", hora, evento)
-                    #Busco la ip origen
-                    lista_split_ip = lista[4].split('\r\n')
-                    lista_ip = lista_split_ip[0]
-                    lista_split_sip = lista[1].split(":")
-                    lista_nombre = lista_split_sip[1]
-                    ip_receive = lista_ip
-                    puerto_receive = self.diccionario_user[lista_nombre][2]
-                    hora = time.time()
-                    evento = " Received to " + str(ip_receive) + ":"
-                    evento += str(puerto_receive) + ": " + line + '\r\n'
                     log("", hora, evento)
                     data = my_socket.recv(1024)
                     print data
                     self.wfile.write(data)
                 else:
+                    ip_receive = self.client_address[0]
+                    puerto_receive = self.client_address[1]
+                    hora = time.time()
+                    evento = " Received from " + str(ip_receive) + ":"
+                    evento += str(port_receive) + ": " + line + '\r\n'
+                    log("", hora, evento)
                     print "El usuario no está registrado"
                     self.wfile.write("SIP/2.0 404 User Not Found\r\n")
                     hora = time.time()
@@ -203,7 +205,12 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
                 my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 my_socket.connect((uaip, int(uaport)))
                 my_socket.send(line)
+                ip_receive = self.client_address[0]
+                port_receive = self.client_address[1]
                 hora = time.time()
+                evento = " Received from " + str(ip_receive) + ":"
+                evento += str(port_receive) + ": " + line + '\r\n'
+                log("", hora, evento)
                 evento = " Sent to " + str(uaip) + ":" + str(uaport) + ": "
                 evento += line + '\r\n'
                 log("", hora, evento)
@@ -219,7 +226,12 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
                 my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 my_socket.connect((uaip, int(uaport)))
                 my_socket.send(line)
+                ip_receive = self.client_address[0]
+                port_receive = self.client_address[1]
                 hora = time.time()
+                evento = " Received from " + str(ip_receive) + ":"
+                evento += str(port_receive) + ": " + line + '\r\n'
+                log("", hora, evento)
                 evento = " Sent to " + str(uaip) + ":" + str(uaport) + ": "
                 evento += line + '\r\n'
                 log("", hora, evento)
