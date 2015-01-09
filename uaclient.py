@@ -58,6 +58,8 @@ uaip = listaXML[1][1]['ip']
 audioport = listaXML[2][1]['puerto']
 proxyip = listaXML[3][1]['ip']
 proxyport = int(listaXML[3][1]['puerto'])
+if uaip == "":
+    uaip = '127.0.0.1'
 
 def log (modo, hora, evento):
     """
@@ -83,7 +85,7 @@ if METODO == 'REGISTER':
     #REGISTER sip:leonard@bigbang.org:1234 SIP/2.0
     #Expires: 3600
     LINE = METODO + " sip:" + usuario + ":" + uaport + ": SIP/2.0\r\n"
-    LINE += "Expires: " + OPTION + "\r\n"
+    LINE += "Expires: " + OPTION + "\r\n\r\n"
     hora = time.time()
     evento = " Sent to " + str(proxyip) + ":" + str(proxyport) + ": " + LINE  + '\r\n'
     print LINE.split(" ")
@@ -128,6 +130,7 @@ try:
     my_socket.send(LINE)
 
     data = my_socket.recv(1024)
+
     if data == "SIP/2.0 200 OK\r\n\r\n":
         evento = " Received from " + str(proxyip) + ":" + str(proxyport) + ": " + data + '\r\n'
         hora = time.time()
@@ -156,15 +159,19 @@ try:
         ip_recibe = split_recibe[1]
         split_recibe_1 = recibe[11].split(" ")
         port_recibe = split_recibe_1[1]
+        #Envio ACK
+        ACK = "ACK sip:" + OPTION + " SIP/2.0\r\n\r\n"
+        print "Enviando ACK: " + ACK
+        print "PUERTO"
+        print port_recibe
+        my_socket.send(ACK)
         aEjecutar = './mp32rtp -i ' + str(ip_recibe) + ' -p ' + port_recibe + " < " + fichaudio
         os.system('chmod 755 mp32rtp')
-        os.system(aEjecutar)
-        #Envio ACK
-        ACK = "ACK" + " sip:" + OPTION + " SIP/2.0\r\n"
-        print "Enviando ACK: " + ACK
-        my_socket.send(ACK)
+        os.system(aEjecutar)        
         data = my_socket.recv(1024)
 
     print "Terminando socket..."
 except socket.error:
-    print "Error: No server listening at " + uaip + " port " + str(uaport)
+    hora = time.time()    
+    evento = "Error: No server listening at " + uaip + " port " + str(uaport)
+    log("", hora, evento)
