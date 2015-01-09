@@ -13,12 +13,12 @@ from xml.sax.handler import ContentHandler
 
 comandos = sys.argv
 
+if len(comandos) != 4:
+    sys.exit('Usage: python uaclient.py config method option')
+
 XML = comandos[1]
 METODO = comandos[2].upper()
 OPTION = comandos [3]
-
-if len(comandos) != 4:
-    sys.exit('Usage: python uaclient.py' + XML + METODO + OPTION)
 
 # clase para etiquetas y atributos
 class ExtraerXML (ContentHandler):
@@ -58,6 +58,7 @@ uaip = listaXML[1][1]['ip']
 audioport = listaXML[2][1]['puerto']
 proxyip = listaXML[3][1]['ip']
 proxyport = int(listaXML[3][1]['puerto'])
+# si la ip esta vacia meto la direccion 127.0.0.1
 if uaip == "":
     uaip = '127.0.0.1'
 
@@ -65,20 +66,13 @@ def log (modo, hora, evento):
     """
     Método que imprime en un fichero los mensajes de depuración.
     """
-    if modo == "inicio":
-        log = listaXML[4][1]['path']
-        fichero = open(log, 'a')
-        fichero.write(str(hora))
-        evento = evento.replace('\r\n', ' ')
-        fichero.write(evento +'\r\n')
-        fichero.close()
-    else:
-        log = listaXML[4][1]['path']
-        fichero = open(log, 'a')
-        fichero.write(str(hora))
-        evento = evento.replace('\r\n', ' ')
-        fichero.write(evento +'\r\n')
-        fichero.close()
+    log = listaXML[4][1]['path']
+    fichero = open(log, 'a')
+    hora = time.gmtime(float(hora))
+    fichero.write(time.strftime('%Y%m%d%H%M%S', hora))
+    evento = evento.replace('\r\n', ' ')
+    fichero.write(evento +'\r\n')
+    fichero.close()
 
 if METODO == 'REGISTER':
     # [1] porque es el diccionario y no la etiqueta
@@ -161,15 +155,21 @@ try:
         port_recibe = split_recibe_1[1]
         #Envio ACK
         ACK = "ACK sip:" + OPTION + " SIP/2.0\r\n\r\n"
+        evento = " Sent to " + str(proxyip) + ":" + str(proxyport) + ": " + ACK + '\r\n'
         print "Enviando ACK: " + ACK
         print "PUERTO"
         print port_recibe
         my_socket.send(ACK)
         aEjecutar = './mp32rtp -i ' + str(ip_recibe) + ' -p ' + port_recibe + " < " + fichaudio
         os.system('chmod 755 mp32rtp')
-        os.system(aEjecutar)        
+        os.system(aEjecutar)
+        linea = "Envio de RTP"     
+        evento = " Sent to " + str(proxyip) + ":" + str(proxyport) + ": " + linea + '\r\n'   
         data = my_socket.recv(1024)
 
+    hora = time.time()
+    evento = "Finishing."
+    log = ("", hora, evento)
     print "Terminando socket..."
 except socket.error:
     hora = time.time()    
