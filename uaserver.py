@@ -12,10 +12,10 @@ from xml.sax.handler import ContentHandler
 
 comandos = sys.argv
 
-XML = comandos[1]
-
 if len(comandos) != 2:
-    sys.exit("Usage: python uaserver.py " + XML)
+    sys.exit('Usage: python uaserver.py config')
+
+XML = comandos[1]
 
 # clase para etiquetas y atributos
 class ExtraerXML (ContentHandler):
@@ -56,6 +56,7 @@ audioport = listaXML[2][1]['puerto']
 proxyip = listaXML[3][1]['ip']
 proxyport = int(listaXML[3][1]['puerto'])
 fichaudio = listaXML[5][1]['path']
+# si la ip esta vacia meto la direccion 127.0.0.1
 if uaip == "":
     uaip = '127.0.0.1'
 
@@ -68,14 +69,16 @@ def log (modo, hora, evento):
     if modo == "inicio":
         log = listaXML[4][1]['path']
         fichero = open(log, 'a')
-        fichero.write(str(hora))
+        hora = time.gmtime(float(hora))
+        fichero.write(time.strftime('%Y%m%d%H%M%S', hora))
         evento = evento.replace('\r\n', ' ')
         fichero.write(evento +'\r\n')
         fichero.close()
     else:
         log = listaXML[4][1]['path']
         fichero = open(log, 'a')
-        fichero.write(str(hora))
+        hora = time.gmtime(float(hora))
+        fichero.write(time.strftime('%Y%m%d%H%M%S', hora))
         evento = evento.replace('\r\n', ' ')
         fichero.write(evento +'\r\n')
         fichero.close()
