@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <config>
-    <server name="miserver@guay.com" ip="127.0.0.1" puerto="12345"/>
+    <server name="miserver@guay.com" ip="127.0.0.2" puerto="12345"/>
     <database path="./registered.txt" passwdpath="./password.txt"/>
-    <log path=""/>
+    <log path="./log_3.txt"/>
 </config>
     
 
