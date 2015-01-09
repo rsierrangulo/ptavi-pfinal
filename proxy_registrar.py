@@ -143,7 +143,6 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
                     if self.diccionario_user[usuario][1] < tiempo_actual:
                         # borro el usuario (clave + valor) del diccionario
                         del self.diccionario_user[usuario]
-                print self.diccionario_user
                 evento = " Received from " + str(IP) + ":"
                 evento += str(lista_split[2]) + ": " + line + '\r\n'
                 hora = time.time()
