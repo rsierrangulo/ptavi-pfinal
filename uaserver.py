@@ -136,32 +136,40 @@ class EchoHandler(SocketServer.DatagramRequestHandler):
                 self.diccionario_rtp['ip_rtp'] = ip_recibe_rtp
                 self.diccionario_rtp['port_rtp'] = port_recibe_rtp
                 hora = time.time()
+                evento = " Received from " + str(proxyip) + ":"
+                evento += str(proxyport) + ": " + line + '\r\n'
+                log("", hora, evento)
                 evento = " Sent to " + str(proxyip) + ":" + str(proxyport)
                 evento += ": " + respuesta + '\r\n'
                 log("", hora, evento)
-                evento = " Received from" + str(proxyip) + ":" + str(proxyport)
-                evento += ": " + line + '\r\n'
             elif metodo == "ACK":
-                evento = " Received from" + str(proxyip) + ":" + str(proxyport)
-                evento += ": " + line + '\r\n'
+                evento = " Received from " + str(proxyip) + ":"
+                evento += str(proxyport) + ": " + line + '\r\n'
                 hora = time.time()
                 log("", hora, evento)
                 print "Recibido ACK"
-                print self.diccionario_rtp['port_rtp']
                 aEjecutar = './mp32rtp -i ' + self.diccionario_rtp['ip_rtp']
                 aEjecutar += ' -p ' + self.diccionario_rtp['port_rtp'] + " < "
                 aEjecutar += fichaudio
                 os.system('chmod 755 mp32rtp')
                 os.system(aEjecutar)
+                hora = time.time()
+                linea = "Envio RTP"
+                ip = self.diccionario_rtp['ip_rtp']
+                port = self.diccionario_rtp['port_rtp']
+                evento = " Sent to " + str(ip) + ":" + str(port)
+                evento += ": " + linea + '\r\n'
+                log("", hora, evento)
                 print("Hemos terminado la ejecución de fichero de audio")
             elif metodo == "BYE":
                 hora = time.time()
+                evento = " Received from " + str(proxyip) + ":"
+                evento += str(proxyport) + ": " + line + '\r\n'
+                log("", hora, evento)
                 respuesta = "SIP/2.0 200 OK"
                 evento = " Sent to " + str(proxyip) + ":" + str(proxyport)
                 evento += ": " + respuesta + '\r\n'
                 log("", hora, evento)
-                evento = " Received from " + str(proxyip) + ":"
-                evento += str(proxyport) + ": " + line + '\r\n'
                 self.wfile.write("SIP/2.0 200 OK\r\n\r\n")
             elif not metodo in metodos:
                 hora = time.time()
