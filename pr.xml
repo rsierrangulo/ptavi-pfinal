@@ -3,7 +3,7 @@
 <config>
     <server name="miserver@guay.com" ip="127.0.0.2" puerto="12345"/>
     <database path="./registered.txt" passwdpath="./password.txt"/>
-    <log path="./log_3.txt"/>
+    <log path="./log_proxy.txt"/>
 </config>
     
 
