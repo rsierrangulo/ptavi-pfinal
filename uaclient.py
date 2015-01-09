@@ -176,11 +176,7 @@ try:
         evento += linea + '\r\n'
         log("", hora, evento)
         data = my_socket.recv(1024)
-
-hora = time.time()
-evento = "Finishing."
-log = ("", hora, evento)
-print "Terminando socket..."
+    print "Terminando socket..."
 
 except socket.error:
     hora = time.time()
