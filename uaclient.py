@@ -78,10 +78,6 @@ def log (modo, hora, evento):
         fichero.write(evento +'\r\n')
         fichero.close()
 
-evento = " Starting... " + '\r\n'
-hora = time.time()
-log("inicio",hora,evento)
-
 if METODO == 'REGISTER':
     # [1] porque es el diccionario y no la etiqueta
     #REGISTER sip:leonard@bigbang.org:1234 SIP/2.0
@@ -100,7 +96,7 @@ elif METODO == 'INVITE':
     #t=0
     #m=audio 34543 RTP
     LINE = METODO + " sip:" + OPTION  + " SIP/2.0\r\n"
-    LINE += "Content-Type: application/sdp\r\n"
+    LINE += "Content-Type: application/sdp\r\n\r\n"
     LINE += "v=0\r\n"
     LINE += "o=" + usuario + " " + uaip + "\r\n"
     LINE += "s=misesion\r\n"
@@ -149,21 +145,22 @@ try:
     recibe = data.split('\r\n')
     print "TRAZA RECIBE"
     print recibe
-    if len(recibe) == 13:
+    print len(recibe)
+    if len(recibe) == 14:
         evento = " Received from " + str(proxyip) + ":" + str(proxyport) + ": " + data + '\r\n'
         hora = time.time()
         log("",hora, evento)
         fichaudio = listaXML[5][1]['path']
         # saco del recibe ip y puerto donde mandar
-        split_recibe = recibe[7].split(" ")
+        split_recibe = recibe[8].split(" ")
         ip_recibe = split_recibe[1]
-        split_recibe_1 = recibe[10].split(" ")
+        split_recibe_1 = recibe[11].split(" ")
         port_recibe = split_recibe_1[1]
         aEjecutar = './mp32rtp -i ' + str(ip_recibe) + ' -p ' + port_recibe + " < " + fichaudio
         os.system('chmod 755 mp32rtp')
         os.system(aEjecutar)
         #Envio ACK
-        ACK = "ACK" + " sip:" + OPTION + " SIP/2.0\r\n\r\n"
+        ACK = "ACK" + " sip:" + OPTION + " SIP/2.0\r\n"
         print "Enviando ACK: " + ACK
         my_socket.send(ACK)
         data = my_socket.recv(1024)
