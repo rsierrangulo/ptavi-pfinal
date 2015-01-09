@@ -83,14 +83,12 @@ class EchoHandler(SocketServer.DatagramRequestHandler):
     """
     Clase para un servidor SIP
     """
-    ip_recibe = ""
-    port_recibe = ""
+    diccionario_rtp = {'ip_rtp': "", 'port_rtp': 0}
 
     def handle(self):
         """
         Método handle
         """
-
         while 1:
             line = self.rfile.read()
             if not line:
@@ -117,13 +115,11 @@ class EchoHandler(SocketServer.DatagramRequestHandler):
                 print lista_2
                 lista_split = lista_2[7].split(" ")
                 lista_split_2 = lista_2[10].split(" ")
-                self.ip_recibe = lista_split[1]
-                self.port_recibe = lista_split_2[1]
-                print "TRAZAS"
-                print self.ip_recibe
-                print self.port_recibe
-                print "TRAZAS" 
-                print respuestara
+                ip_recibe_rtp = lista_split[1]
+                port_recibe_rtp = lista_split_2[1]
+                self.diccionario_rtp['ip_rtp'] = ip_recibe_rtp 
+                self.diccionario_rtp['port_rtp'] = port_recibe_rtp 
+                print respuesta
                 hora = time.time()
                 evento = " Sent to " + str(proxyip) + ":" + str(proxyport) + ": " + respuesta + '\r\n'
                 log("",hora, evento)
@@ -134,10 +130,12 @@ class EchoHandler(SocketServer.DatagramRequestHandler):
                 log("",hora, evento)
                 # aEjecutar = "./mp32rtp -i " + receptor_IP + " -p " + receptor_Puerto
                 print "recibido ACK"
-                aEjecutar = './mp32rtp -i' + self.ip_recibe + '-p' + self.port_recibe + "<" + fichaudio
+                aEjecutar = './mp32rtp -i ' + self.diccionario_rtp['ip_rtp'] + ' -p ' + self.diccionario_rtp['port_rtp'] + " < " + fichaudio
                 os.system('chmod 755 mp32rtp')
                 os.system(aEjecutar)
                 print(" Hemos terminado la ejecución de fichero de audio")
+                print "AEJECUTAR"
+                print aEjecutar
             elif metodo == "BYE":
                 hora = time.time()
                 respuesta = "SIP/2.0 200 OK"
