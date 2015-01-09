@@ -125,8 +125,6 @@ class EchoHandler(SocketServer.DatagramRequestHandler):
                 self.wfile.write(respuesta)
                 guardar = line
                 lista_2 = guardar.split("\r\n")
-                print "LISTA PARA IP Y PUERTO RTP"
-                print lista_2
                 # busco en el mensaje que recibo la ip y el puerto donde voy a
                 # enviar el rtp
                 lista_split = lista_2[4].split(" ")
