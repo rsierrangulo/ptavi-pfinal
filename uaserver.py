@@ -56,6 +56,9 @@ audioport = listaXML[2][1]['puerto']
 proxyip = listaXML[3][1]['ip']
 proxyport = int(listaXML[3][1]['puerto'])
 fichaudio = listaXML[5][1]['path']
+if uaip == "":
+    uaip = '127.0.0.1'
+
 
 
 def log (modo, hora, evento):
@@ -86,6 +89,8 @@ class EchoHandler(SocketServer.DatagramRequestHandler):
     """
     Clase para un servidor SIP
     """
+    # creo un diccionario como variable global para guardar la ip y el puerto
+    # para el envio rtp
     diccionario_rtp = {'ip_rtp': "", 'port_rtp': 0}
 
     def handle(self):
@@ -113,11 +118,14 @@ class EchoHandler(SocketServer.DatagramRequestHandler):
                 respuesta += "t=0\r\n"
                 respuesta += "m=audio8 " + audioport + " RTP\r\n\r\n"
                 self.wfile.write(respuesta)
-                guardar = respuesta
+                guardar = line
                 lista_2 = guardar.split("\r\n")
+                print "LISTA PARA IP Y PUERTO RTP"
                 print lista_2
-                lista_split = lista_2[8].split(" ")
-                lista_split_2 = lista_2[11].split(" ")
+                # busco en el mensaje que recibo la ip y el puerto donde voy a 
+                # enviar el rtp
+                lista_split = lista_2[4].split(" ")
+                lista_split_2 = lista_2[7].split(" ")
                 ip_recibe_rtp = lista_split[1]
                 port_recibe_rtp = lista_split_2[1]
                 self.diccionario_rtp['ip_rtp'] = ip_recibe_rtp 
@@ -133,6 +141,8 @@ class EchoHandler(SocketServer.DatagramRequestHandler):
                 log("",hora, evento)
                 # aEjecutar = "./mp32rtp -i " + receptor_IP + " -p " + receptor_Puerto
                 print "recibido ACK"
+                print "PUERTO"
+                print self.diccionario_rtp['port_rtp']
                 aEjecutar = './mp32rtp -i ' + self.diccionario_rtp['ip_rtp'] + ' -p ' + self.diccionario_rtp['port_rtp'] + " < " + fichaudio
                 os.system('chmod 755 mp32rtp')
                 os.system(aEjecutar)
@@ -144,7 +154,7 @@ class EchoHandler(SocketServer.DatagramRequestHandler):
                 respuesta = "SIP/2.0 200 OK"
                 evento = " Sent to " + str(proxyip) + ":" + str(proxyport) + ": " + respuesta + '\r\n'
                 log("",hora, evento)
-                evento = " Received from" + str(proxyip) + ":" + str(proxyport) + ": " + line + '\r\n'
+                evento = " Received from " + str(proxyip) + ":" + str(proxyport) + ": " + line + '\r\n'
                 self.wfile.write("SIP/2.0 200 OK\r\n\r\n")
             elif not metodo in metodos:
                 hora = time.time()
