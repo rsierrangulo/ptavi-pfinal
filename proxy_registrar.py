@@ -25,14 +25,14 @@ def log (modo, hora, evento):
     """
     if modo == "inicio":
         log = listaXML[2][1]['path']
-        fichero = open('log', 'a')
+        fichero = open(log, 'a')
         fichero.write("Tiempo" + '\t\t\t\t\t\t\t\t' + "Evento" + '\r\n')
         fichero.write(str(hora))
         fichero.write(evento)
         fichero.close()
     else:
         log = listaXML[2][1]['path']
-        fichero = open('log', 'a')
+        fichero = open(log, 'a')
         fichero.write(str(hora))
         fichero.write(evento)
         fichero.close()
@@ -92,7 +92,7 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
         Método que imprime en un fichero el contenido del diccionario
         """
         database = listaXML[1][1]['path']
-        fichero = open('database', 'w')
+        fichero = open(database, 'w')
         fichero.write("User" + '\t\t\t\t' + "IP" + '\t\t\t' + "Port" + '\t' + "Time" + '\r\n')
         print self.diccionario_user
         for user in self.diccionario_user.keys():
