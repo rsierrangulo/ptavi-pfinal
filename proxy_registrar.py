@@ -137,10 +137,10 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
                         # borro el usuario (clave + valor) del diccionario
                         del self.diccionario_user[usuario]
                 print self.diccionario_user
-                evento = " Received from " + str(IP) + " " + str(lista_split[2]) + " " + line + '\r\n'
+                evento = " Received from " + str(IP) + ":" + str(lista_split[2]) + ": " + line + '\r\n'
                 hora = time.time()
                 log("",hora, evento)
-                evento = " Sent to " + str(IP) + " " + str(lista_split[2]) + " SIP/2.0 200 OK"  + '\r\n'
+                evento = " Sent to " + str(IP) + ":" + str(lista_split[2]) + ": SIP/2.0 200 OK"  + '\r\n'
                 log("",hora, evento)
                 self.wfile.write("SIP/2.0 200 OK\r\n\r\n")
             elif metodo == "INVITE":
@@ -159,7 +159,7 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
                     my_socket.connect((uaip, int(uaport)))  
                     my_socket.send(line)
                     hora = time.time()
-                    evento = " Sent to " + str(uaip) + str(uaport) + line + '\r\n'
+                    evento = " Sent to " + str(uaip) + " " + str(uaport) + " " + line + '\r\n'
                     log("",hora, evento)
                     #Busco la ip origen
                     lista_split_ip = lista[4].split('\r\n')
@@ -170,7 +170,7 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
                     puerto_receive = self.diccionario_user[lista_nombre][2]
                     print "PUERTO"
                     print puerto_receive
-                    evento = " Received to " + str(ip_receive) + " " + str(puerto_receive) + " " + line + '\r\n'
+                    evento = " Received to " + str(ip_receive) + ":" + str(puerto_receive) + ": " + line + '\r\n'
                     data = my_socket.recv(1024)
                     print " necesito sip para puerto"
                     print lista
@@ -196,7 +196,7 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
                 my_socket.connect((uaip, int(uaport)))  
                 my_socket.send(line)
                 hora = time.time()
-                evento = " Sent to " + str(uaip) + " " + str(uaport) + " " + line + '\r\n'
+                evento = " Sent to " + str(uaip) + ":" + str(uaport) + ": " + line + '\r\n'
                 log("",hora, evento)
                 data = my_socket.recv(1024)
                 self.wfile.write(data)
@@ -213,7 +213,7 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
                 my_socket.connect((uaip, int(uaport)))  
                 my_socket.send(line)
                 hora = time.time()
-                evento = " Sent to " + str(uaip) + " " + str(uaport) + " " + line + '\r\n'
+                evento = " Sent to " + str(uaip) + ":" + str(uaport) + ": " + line + '\r\n'
                 log("",hora, evento)  
             self.register2file()
         
