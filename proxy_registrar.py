@@ -220,5 +220,8 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
 
 if __name__ == "__main__":
     serv = SocketServer.UDPServer((ipserver, int(portserver)), SIPRegisterHandler)
+    hora = time.time()    
+    evento = " Server " + usuario + " listening at port " + portserver + "..."
+    log("", hora, evento)
     print "Server " + usuario + " listening at port " + portserver + "..."
     serv.serve_forever()
