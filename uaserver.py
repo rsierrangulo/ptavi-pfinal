@@ -76,10 +76,6 @@ def log (modo, hora, evento):
         fichero.write(evento +'\r\n')
         fichero.close()
 
-evento = " Starting... " + '\r\n'
-hora = time.time()
-log("inicio",hora,evento)
-
 class EchoHandler(SocketServer.DatagramRequestHandler):
     """
     Clase para un servidor SIP
