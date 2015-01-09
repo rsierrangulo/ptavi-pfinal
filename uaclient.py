@@ -87,6 +87,7 @@ if METODO == 'REGISTER':
     hora = time.time()
     evento = " Sent to " + str(proxyip) + ":" + str(proxyport)
     evento += ": " + LINE + '\r\n'
+    log("", hora, evento)
 elif METODO == 'INVITE':
     # INVITE sip:penny@girlnextdoor.com SIP/2.0
     #Content-Type: application/sdp
@@ -160,8 +161,10 @@ try:
         port_recibe = split_recibe_1[1]
         #Envio ACK
         ACK = "ACK sip:" + OPTION + " SIP/2.0\r\n\r\n"
+        hora = time.time()
         evento = " Sent to " + str(proxyip) + ":" + str(proxyport) + ": "
         evento += ACK + '\r\n'
+        log("", hora, evento)
         print "Enviando ACK: " + ACK
         my_socket.send(ACK)
         aEjecutar = './mp32rtp -i ' + str(ip_recibe) + ' -p ' + port_recibe
@@ -169,8 +172,9 @@ try:
         os.system('chmod 755 mp32rtp')
         os.system(aEjecutar)
         linea = "Envio de RTP"
-        evento = " Sent to " + str(proxyip) + ":" + str(proxyport) + ": "
+        evento = " Sent to " + str(ip_recibe) + ":" + str(port_recibe) + ": "
         evento += linea + '\r\n'
+        log("", hora, evento)
         data = my_socket.recv(1024)
 
     hora = time.time()
