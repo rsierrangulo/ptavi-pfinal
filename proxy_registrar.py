@@ -13,10 +13,10 @@ from xml.sax.handler import ContentHandler
 
 comandos = sys.argv
 
-XML = comandos[1]
-
 if len(comandos) != 2:
-    sys.exit("Usage: python proxy_registrar.py " + XML)
+    sys.exit('Usage: python proxy_registrar.py config')
+
+XML = comandos[1]
 
 
 def log (modo, hora, evento):
@@ -26,14 +26,16 @@ def log (modo, hora, evento):
     if modo == "inicio":
         log = listaXML[2][1]['path']
         fichero = open(log, 'a')
-        fichero.write(str(hora))
+        hora = time.gmtime(float(hora))
+        fichero.write(time.strftime('%Y%m%d%H%M%S', hora))
         evento = evento.replace('\r\n', ' ')
         fichero.write(evento +'\r\n')
         fichero.close()
     else:
         log = listaXML[2][1]['path']
         fichero = open(log, 'a')
-        fichero.write(str(hora))
+        hora = time.gmtime(float(hora))
+        fichero.write(time.strftime('%Y%m%d%H%M%S', hora))
         evento = evento.replace('\r\n', ' ')
         fichero.write(evento +'\r\n')
         fichero.close()
@@ -57,6 +59,7 @@ class ExtraerXML (ContentHandler):
             for attribute in self.attributes[tag]:
                 if attribute == 'ip':
                     dictionary[attribute] = attrs.get(attribute, "")
+                    # si la ip esta vacía meto 121.0.0.1
                     ipserver = dictionary[attribute]
                     if ipserver == "":
                         ipserver = "127.0.0.1"
@@ -76,6 +79,7 @@ listaXML = XMLHandler.get_tags()
 usuario = listaXML[0][1]['name']
 ipserver = listaXML[0][1]['ip']
 portserver = listaXML[0][1]['puerto']
+
 evento = " Starting... " + '\r\n'
 hora = time.time()
 log("inicio",hora,evento)
@@ -181,7 +185,7 @@ class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
                     self.wfile.write("SIP/2.0 404 User Not Found\r\n")
                     hora = time.time()
                     error = " SIP/2.0 404 User Not Found"
-                    evento = " Error " + error + '\r\n'
+                    evento = " Error: " + error + '\r\n'
                     log("",hora, evento)  
             elif metodo == "BYE":
                 nombre = lista[1]
