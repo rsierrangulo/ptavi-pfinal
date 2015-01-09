@@ -86,10 +86,10 @@ if METODO == 'REGISTER':
     # [1] porque es el diccionario y no la etiqueta
     #REGISTER sip:leonard@bigbang.org:1234 SIP/2.0
     #Expires: 3600
-    LINE = METODO + " sip:" + usuario + ":" + uaport + " SIP/2.0\r\n"
+    LINE = METODO + " sip:" + usuario + ":" + uaport + ": SIP/2.0\r\n"
     LINE += "Expires: " + OPTION + "\r\n"
     hora = time.time()
-    evento = " Sent to " + str(proxyip) + " " + str(proxyport) + " " + LINE  + '\r\n'
+    evento = " Sent to " + str(proxyip) + ":" + str(proxyport) + ": " + LINE  + '\r\n'
     print LINE.split(" ")
 elif METODO == 'INVITE':
     # INVITE sip:penny@girlnextdoor.com SIP/2.0
@@ -107,19 +107,19 @@ elif METODO == 'INVITE':
     LINE += "t=0\r\n"
     LINE += "m=audio8 " + audioport + " RTP\r\n\r\n"
     hora = time.time()
-    evento = " Sent to " + str(proxyip) + " " + str(proxyport) + " " + LINE + '\r\n'
+    evento = " Sent to " + str(proxyip) + ":" + str(proxyport) + ": " + LINE + '\r\n'
     log("",hora, evento)
     lista = LINE.split(" ")
     print lista
 elif METODO == 'BYE':
     LINE = METODO + " sip:" + OPTION + " SIP/2.0\r\n\r\n"
     hora = time.time()
-    evento = " Sent to " + str(proxyip) + " " + str(proxyport) + " " + LINE + '\r\n'
+    evento = " Sent to " + str(proxyip) + ":" + str(proxyport) + ": " + LINE + '\r\n'
     log("",hora, evento)
 else:
     hora = time.time()
     error = "SIP/2.0 405 Method Not Allowed"
-    evento = " Error " + error + '\r\n'
+    evento = " Error: " + error + '\r\n'
     log("",hora, evento) 
     sys.exit("Error: Método no válido")    
 
@@ -133,15 +133,15 @@ try:
 
     data = my_socket.recv(1024)
     if data == "SIP/2.0 200 OK\r\n\r\n":
-        evento = " Received from " + str(proxyip) + ":" + str(proxyport) + " " + data + '\r\n'
+        evento = " Received from " + str(proxyip) + ":" + str(proxyport) + ": " + data + '\r\n'
         hora = time.time()
         log("",hora, evento)
     elif data == "SIP/2.0 405 Method Not Allowed\r\n\r\n":
-        evento = " Error " + data + '\r\n'
+        evento = " Error: " + data + '\r\n'
         hora = time.time()
         log("",hora, evento)
     elif data == "SIP/2.0 400 Bad Request\r\n\r\n":
-        evento = " Error " + data + '\r\n'
+        evento = " Error: " + data + '\r\n'
         hora = time.time()
         log("",hora, evento)
 
@@ -150,7 +150,7 @@ try:
     print "TRAZA RECIBE"
     print recibe
     if len(recibe) == 13:
-        evento = " Received from " + str(proxyip) + ":" + str(proxyport) + " " + data + '\r\n'
+        evento = " Received from " + str(proxyip) + ":" + str(proxyport) + ": " + data + '\r\n'
         hora = time.time()
         log("",hora, evento)
         fichaudio = listaXML[5][1]['path']
