@@ -64,15 +64,16 @@ def log (modo, hora, evento):
     if modo == "inicio":
         log = listaXML[4][1]['path']
         fichero = open(log, 'a')
-        fichero.write("Tiempo" + '\t\t\t\t\t\t\t\t' + "Evento" + '\r\n')
         fichero.write(str(hora))
-        fichero.write(evento)
+        evento = evento.replace('\r\n', ' ')
+        fichero.write(evento +'\r\n')
         fichero.close()
     else:
         log = listaXML[4][1]['path']
         fichero = open(log, 'a')
         fichero.write(str(hora))
-        fichero.write(evento)
+        evento = evento.replace('\r\n', ' ')
+        fichero.write(evento +'\r\n')
         fichero.close()
 
 evento = " Starting... " + '\r\n'
