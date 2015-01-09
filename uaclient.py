@@ -18,14 +18,16 @@ if len(comandos) != 4:
 
 XML = comandos[1]
 METODO = comandos[2].upper()
-OPTION = comandos [3]
+OPTION = comandos[3]
+
 
 # clase para etiquetas y atributos
 class ExtraerXML (ContentHandler):
 
     def __init__(self):
         self.taglist = []
-        self.tags = ['account', 'uaserver', 'rtpaudio', 'regproxy', 'log', 'audio']
+        self.tags = [
+            'account', 'uaserver', 'rtpaudio', 'regproxy', 'log', 'audio']
         self.attributes = {
             'account': ['username', 'passwd'],
             'uaserver': ['ip', 'puerto'],
@@ -37,11 +39,12 @@ class ExtraerXML (ContentHandler):
     def startElement(self, tag, attrs):
         dictionary = {}
         # si existe la etiqueta en mi lista de etiquetas.
-        if tag in self.tags: 
+        if tag in self.tags:
             # recorro todos los atributos y los guardo en mi diccionario.
             for attribute in self.attributes[tag]:
                 dictionary[attribute] = attrs.get(attribute, "")
-            # voy encadenando la lista, guardo a continuación sin sustituir lo que tiene dentro.
+            # voy encadenando la lista, guardo a continuación sin sustituir
+            # lo que tiene dentro.
             self.taglist.append([tag, dictionary])
 
     def get_tags(self):
@@ -62,7 +65,8 @@ proxyport = int(listaXML[3][1]['puerto'])
 if uaip == "":
     uaip = '127.0.0.1'
 
-def log (modo, hora, evento):
+
+def log(modo, hora, evento):
     """
     Método que imprime en un fichero los mensajes de depuración.
     """
@@ -71,7 +75,7 @@ def log (modo, hora, evento):
     hora = time.gmtime(float(hora))
     fichero.write(time.strftime('%Y%m%d%H%M%S', hora))
     evento = evento.replace('\r\n', ' ')
-    fichero.write(evento +'\r\n')
+    fichero.write(evento + '\r\n')
     fichero.close()
 
 if METODO == 'REGISTER':
@@ -81,8 +85,8 @@ if METODO == 'REGISTER':
     LINE = METODO + " sip:" + usuario + ":" + uaport + ": SIP/2.0\r\n"
     LINE += "Expires: " + OPTION + "\r\n\r\n"
     hora = time.time()
-    evento = " Sent to " + str(proxyip) + ":" + str(proxyport) + ": " + LINE  + '\r\n'
-    print LINE.split(" ")
+    evento = " Sent to " + str(proxyip) + ":" + str(proxyport)
+    evento += ": " + LINE + '\r\n'
 elif METODO == 'INVITE':
     # INVITE sip:penny@girlnextdoor.com SIP/2.0
     #Content-Type: application/sdp
@@ -91,7 +95,7 @@ elif METODO == 'INVITE':
     #s=misesion
     #t=0
     #m=audio 34543 RTP
-    LINE = METODO + " sip:" + OPTION  + " SIP/2.0\r\n"
+    LINE = METODO + " sip:" + OPTION + " SIP/2.0\r\n"
     LINE += "Content-Type: application/sdp\r\n\r\n"
     LINE += "v=0\r\n"
     LINE += "o=" + usuario + " " + uaip + "\r\n"
@@ -99,21 +103,22 @@ elif METODO == 'INVITE':
     LINE += "t=0\r\n"
     LINE += "m=audio8 " + audioport + " RTP\r\n\r\n"
     hora = time.time()
-    evento = " Sent to " + str(proxyip) + ":" + str(proxyport) + ": " + LINE + '\r\n'
-    log("",hora, evento)
+    evento = " Sent to " + str(proxyip) + ":" + str(proxyport)
+    evento += ": " + LINE + '\r\n'
+    log("", hora, evento)
     lista = LINE.split(" ")
-    print lista
 elif METODO == 'BYE':
     LINE = METODO + " sip:" + OPTION + " SIP/2.0\r\n\r\n"
     hora = time.time()
-    evento = " Sent to " + str(proxyip) + ":" + str(proxyport) + ": " + LINE + '\r\n'
-    log("",hora, evento)
+    evento = " Sent to " + str(proxyip) + ":" + str(proxyport)
+    evento += ": " + LINE + '\r\n'
+    log("", hora, evento)
 else:
     hora = time.time()
     error = "SIP/2.0 405 Method Not Allowed"
     evento = " Error: " + error + '\r\n'
-    log("",hora, evento) 
-    sys.exit("Error: Método no válido")    
+    log("", hora, evento)
+    sys.exit("Error: Método no válido")
 
 my_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -126,27 +131,27 @@ try:
     data = my_socket.recv(1024)
 
     if data == "SIP/2.0 200 OK\r\n\r\n":
-        evento = " Received from " + str(proxyip) + ":" + str(proxyport) + ": " + data + '\r\n'
+        evento = " Received from " + str(proxyip) + ":" + str(proxyport)
+        evento += ": " + data + '\r\n'
         hora = time.time()
-        log("",hora, evento)
+        log("", hora, evento)
     elif data == "SIP/2.0 405 Method Not Allowed\r\n\r\n":
         evento = " Error: " + data + '\r\n'
         hora = time.time()
-        log("",hora, evento)
+        log("", hora, evento)
     elif data == "SIP/2.0 400 Bad Request\r\n\r\n":
         evento = " Error: " + data + '\r\n'
         hora = time.time()
-        log("",hora, evento)
+        log("", hora, evento)
 
     print 'Recibido -- ', data
     recibe = data.split('\r\n')
-    print "TRAZA RECIBE"
     print recibe
-    print len(recibe)
     if len(recibe) == 14:
-        evento = " Received from " + str(proxyip) + ":" + str(proxyport) + ": " + data + '\r\n'
+        evento = " Received from " + str(proxyip) + ":" + str(proxyport)
+        evento += ": " + data + '\r\n'
         hora = time.time()
-        log("",hora, evento)
+        log("", hora, evento)
         fichaudio = listaXML[5][1]['path']
         # saco del recibe ip y puerto donde mandar
         split_recibe = recibe[8].split(" ")
@@ -155,16 +160,17 @@ try:
         port_recibe = split_recibe_1[1]
         #Envio ACK
         ACK = "ACK sip:" + OPTION + " SIP/2.0\r\n\r\n"
-        evento = " Sent to " + str(proxyip) + ":" + str(proxyport) + ": " + ACK + '\r\n'
+        evento = " Sent to " + str(proxyip) + ":" + str(proxyport) + ": "
+        evento += ACK + '\r\n'
         print "Enviando ACK: " + ACK
-        print "PUERTO"
-        print port_recibe
         my_socket.send(ACK)
-        aEjecutar = './mp32rtp -i ' + str(ip_recibe) + ' -p ' + port_recibe + " < " + fichaudio
+        aEjecutar = './mp32rtp -i ' + str(ip_recibe) + ' -p ' + port_recibe
+        aEjecutar += " < " + fichaudio
         os.system('chmod 755 mp32rtp')
         os.system(aEjecutar)
-        linea = "Envio de RTP"     
-        evento = " Sent to " + str(proxyip) + ":" + str(proxyport) + ": " + linea + '\r\n'   
+        linea = "Envio de RTP"
+        evento = " Sent to " + str(proxyip) + ":" + str(proxyport) + ": "
+        evento += linea + '\r\n'
         data = my_socket.recv(1024)
 
     hora = time.time()
@@ -172,6 +178,6 @@ try:
     log = ("", hora, evento)
     print "Terminando socket..."
 except socket.error:
-    hora = time.time()    
+    hora = time.time()
     evento = "Error: No server listening at " + uaip + " port " + str(uaport)
     log("", hora, evento)
