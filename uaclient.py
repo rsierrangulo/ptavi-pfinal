@@ -177,10 +177,11 @@ try:
         log("", hora, evento)
         data = my_socket.recv(1024)
 
-    hora = time.time()
-    evento = "Finishing."
-    log = ("", hora, evento)
-    print "Terminando socket..."
+hora = time.time()
+evento = "Finishing."
+log = ("", hora, evento)
+print "Terminando socket..."
+
 except socket.error:
     hora = time.time()
     evento = "Error: No server listening at " + uaip + " port " + str(uaport)
